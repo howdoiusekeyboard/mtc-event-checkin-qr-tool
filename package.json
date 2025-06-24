@@ -1,0 +1,93 @@
+{
+  "name": "mtc-event-checkin-qr-tool",
+  "version": "2.0.0",
+  "description": "Professional event check-in system with QR code generation and Google Sheets integration, featuring comprehensive environment variable management",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "node deploy.js development && python -m http.server 8000",
+    "build:dev": "node deploy.js development",
+    "build:staging": "node deploy.js staging",
+    "build:prod": "node deploy.js production",
+    "deploy:dev": "npm run build:dev",
+    "deploy:staging": "npm run build:staging",
+    "deploy:prod": "npm run build:prod",
+    "validate": "node deploy.js development --validate-only",
+    "clean": "rm -f config.json env-info.json",
+    "setup": "cp .env.example .env.development && echo 'Please edit .env.development with your configuration'",
+    "docs": "echo 'Documentation available in README.md and docs/ folder'",
+    "security-check": "echo 'Please review SECURITY.md for security guidelines'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/mtc-event-checkin-qr-tool.git"
+  },
+  "keywords": [
+    "qr-code",
+    "event-management",
+    "check-in",
+    "attendance-tracking",
+    "google-sheets",
+    "microsoft-tech-club",
+    "mtc",
+    "environment-variables",
+    "javascript",
+    "html5",
+    "css3",
+    "fluent-design",
+    "responsive",
+    "pwa-ready"
+  ],
+  "author": {
+    "name": "Microsoft Tech Club",
+    "email": "contact@yourdomain.com",
+    "url": "https://yourdomain.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/mtc-event-checkin-qr-tool/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/mtc-event-checkin-qr-tool#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "devDependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "dependencies": {},
+  "files": [
+    "index.html",
+    "styles.css",
+    "script.js",
+    "env-loader.js",
+    "secure-config.js",
+    "deploy.js",
+    "google-apps-script.js",
+    ".env.example",
+    ".env.development",
+    ".env.staging",
+    ".env.production",
+    "README.md",
+    "ENVIRONMENT_VARIABLES.md",
+    "ENVIRONMENT_SETUP.md",
+    "SETUP_GUIDE.md",
+    "GOOGLE_SHEETS_SETUP.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "config": {
+    "default_environment": "development",
+    "supported_environments": ["development", "staging", "production"]
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/YOUR_USERNAME"
+  }
+}

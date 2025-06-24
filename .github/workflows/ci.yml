@@ -1,0 +1,180 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Configuration
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Validate environment files
+      run: |
+        # Check if required files exist
+        test -f .env.example || exit 1
+        test -f .env.development || exit 1
+        test -f .env.staging || exit 1
+        test -f .env.production || exit 1
+        
+    - name: Validate deployment script
+      run: |
+        # Test deployment script with development environment
+        node deploy.js development
+        
+    - name: Check for sensitive data
+      run: |
+        # Ensure no sensitive data in repository
+        if grep -r "YOUR_SCRIPT_ID" --exclude-dir=.git --exclude="*.md" --exclude=".env.example" .; then
+          echo "Found placeholder values that should be replaced"
+          exit 1
+        fi
+        
+    - name: Validate HTML
+      run: |
+        # Basic HTML validation
+        if ! grep -q "env-loader.js" index.html; then
+          echo "Missing env-loader.js in HTML"
+          exit 1
+        fi
+        
+    - name: Security check
+      run: |
+        # Check .gitignore includes sensitive files
+        if ! grep -q ".env$" .gitignore; then
+          echo ".env not in .gitignore"
+          exit 1
+        fi
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test Application
+    needs: validate
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Setup test environment
+      run: |
+        cp .env.example .env.development
+        node deploy.js development
+        
+    - name: Start test server
+      run: |
+        python3 -m http.server 8000 &
+        sleep 5
+        
+    - name: Test application endpoints
+      run: |
+        # Test main page loads
+        curl -f http://localhost:8000/ > /dev/null
+        
+        # Test config.json is generated
+        curl -f http://localhost:8000/config.json > /dev/null
+        
+        # Test static assets
+        curl -f http://localhost:8000/styles.css > /dev/null
+        curl -f http://localhost:8000/script.js > /dev/null
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run security audit
+      run: |
+        # Check for common security issues
+        echo "Running security checks..."
+        
+        # Check for hardcoded secrets
+        if grep -r -i "password\|secret\|key\|token" --exclude-dir=.git --exclude="*.md" --exclude=".env.example" . | grep -v "YOUR_"; then
+          echo "Potential hardcoded secrets found"
+          exit 1
+        fi
+        
+        # Check file permissions
+        find . -type f -name "*.js" -o -name "*.html" -o -name "*.css" | xargs ls -la
+        
+    - name: Dependency security audit
+      run: |
+        if [ -f package.json ]; then
+          npm audit --audit-level moderate
+        fi
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: [validate, test, security]
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build for staging
+      run: node deploy.js staging
+      
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment commands here
+        
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [validate, test, security]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build for production
+      run: node deploy.js production
+      
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment commands here

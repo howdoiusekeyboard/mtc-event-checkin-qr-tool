@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTC Event Check-In QR Tool</title>
+
+    <!-- Environment Configuration Meta Tags -->
+    <!-- Update these with your actual values -->
+    <meta name="secure-google_apps_script_url" content="YOUR_GOOGLE_APPS_SCRIPT_URL_HERE">
+    <meta name="env-app_name" content="MTC Event Check-In QR Tool">
+    <meta name="env-default_event_name" content="MTC Event">
+    <meta name="env-enable_attendance_tracking" content="true">
+    <meta name="env-feature_google_sheets" content="true">
+    <meta name="env-show_debug_info" content="false">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Environment Configuration System -->
+    <script src="env-loader.js"></script>
+    <script src="secure-config.js"></script>
+
+    <!-- QR Code Library CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Microsoft Branding -->
+        <header class="header">
+            <div class="logo-container">
+                <svg class="microsoft-logo" width="108" height="24" viewBox="0 0 108 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="10" height="10" fill="#F25022"/>
+                    <rect x="12" width="10" height="10" fill="#7FBA00"/>
+                    <rect y="12" width="10" height="10" fill="#00A4EF"/>
+                    <rect x="12" y="12" width="10" height="10" fill="#FFB900"/>
+                </svg>
+                <h1 class="title">MTC Event Check-In</h1>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="form-container">
+                <h2 class="form-title">Generate Check-In QR Code</h2>
+                
+                <!-- Input Form -->
+                <form class="check-in-form" id="check-in-form">
+                    <div class="input-group">
+                        <label for="name" class="input-label">Student Name</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            class="input-field" 
+                            placeholder="Enter student name"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="email" class="input-label">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            class="input-field"
+                            placeholder="Enter email address"
+                            required
+                        >
+                    </div>
+
+                    <div class="input-group">
+                        <label for="event" class="input-label">Event Name (Optional)</label>
+                        <input
+                            type="text"
+                            id="event"
+                            class="input-field"
+                            placeholder="e.g., MTC Workshop - React Basics"
+                        >
+                    </div>
+                    
+                    <!-- Generate Button -->
+                    <button type="button" id="generate-btn" class="generate-btn">
+                        Generate Check-In QR
+                    </button>
+                </form>
+            </div>
+
+            <!-- QR Code Display Area -->
+            <div class="qr-section">
+                <div id="qr-container" class="qr-container">
+                    <div class="qr-placeholder">
+                        <svg class="qr-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                            <rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor"/>
+                            <rect x="15" y="5" width="4" height="4" rx="0.5" fill="currentColor"/>
+                            <rect x="5" y="15" width="4" height="4" rx="0.5" fill="currentColor"/>
+                            <rect x="13" y="13" width="2" height="2" fill="currentColor"/>
+                            <rect x="17" y="13" width="2" height="2" fill="currentColor"/>
+                            <rect x="19" y="15" width="2" height="2" fill="currentColor"/>
+                            <rect x="13" y="17" width="2" height="2" fill="currentColor"/>
+                            <rect x="15" y="19" width="2" height="2" fill="currentColor"/>
+                            <rect x="19" y="19" width="2" height="2" fill="currentColor"/>
+                        </svg>
+                        <p class="placeholder-text">Your QR code will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

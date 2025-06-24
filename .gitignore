@@ -1,0 +1,175 @@
+# MTC Event Check-In QR Tool - Git Ignore File
+
+# =============================================================================
+# ENVIRONMENT VARIABLES AND SENSITIVE DATA
+# =============================================================================
+
+# Environment files with sensitive data
+.env
+.env.local
+.env.*.local
+
+# Keep example files but ignore actual configuration
+!.env.example
+
+# Generated configuration files
+config.json
+env-info.json
+
+# Backup environment files
+*.env.backup
+*.env.bak
+
+# =============================================================================
+# LOGS AND DEBUG FILES
+# =============================================================================
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Debug files
+debug/
+*.debug
+
+# Error reports
+error-reports/
+crash-reports/
+
+# =============================================================================
+# TEMPORARY AND CACHE FILES
+# =============================================================================
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Cache directories
+.cache/
+cache/
+*.cache
+
+# Build artifacts
+build/
+dist/
+out/
+
+# =============================================================================
+# NODE.JS AND NPM
+# =============================================================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# NPM cache
+.npm/
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =============================================================================
+# DEPLOYMENT AND PRODUCTION
+# =============================================================================
+
+# Deployment artifacts
+deploy/
+deployment/
+*.deploy
+
+# Production builds
+prod/
+production/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# =============================================================================
+# GOOGLE SERVICES
+# =============================================================================
+
+# Google service account keys
+service-account-key.json
+google-credentials.json
+*.google-key.json
+
+# Google Apps Script files
+*.gs.backup
+
+# =============================================================================
+# TESTING
+# =============================================================================
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Test results
+test-results/
+*.test.log
+
+# =============================================================================
+# DOCUMENTATION BUILDS
+# =============================================================================
+
+# Generated documentation
+docs/build/
+docs/dist/
+
+# =============================================================================
+# SECURITY
+# =============================================================================
+
+# Security scan results
+security-reports/
+*.security
+
+# Vulnerability reports
+vulnerability-reports/
+
+# =============================================================================
+# CUSTOM PROJECT FILES
+# =============================================================================
+
+# Custom configuration overrides
+config.override.js
+config.local.js
+
+# Development utilities
+dev-utils/
+scripts/local/
+
+# Personal notes and todos
+TODO.md
+NOTES.md
+*.personal.md
