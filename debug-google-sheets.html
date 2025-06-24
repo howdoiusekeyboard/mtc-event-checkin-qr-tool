@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Debug Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0078D4;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+        button {
+            background-color: #0078D4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #106ebe;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .warning {
+            border-color: #ffc107;
+            background-color: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google Sheets Debug Tool</h1>
+        <p>This tool helps diagnose and fix Google Apps Script integration issues.</p>
+
+        <!-- Configuration Section -->
+        <div class="section">
+            <h3>1. Configuration</h3>
+            <label for="scriptUrl">Google Apps Script URL:</label>
+            <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+            
+            <label for="testData">Test Data (JSON):</label>
+            <textarea id="testData" rows="6">{
+  "name": "Debug Test User",
+  "email": "debug@test.com",
+  "event": "Debug Test Event",
+  "qrGenerated": true,
+  "timestamp": "2024-06-24T15:30:00.000Z",
+  "userAgent": "Debug Tool"
+}</textarea>
+        </div>
+
+        <!-- Tests Section -->
+        <div class="section">
+            <h3>2. Tests</h3>
+            <button onclick="testGetRequest()">Test GET Request</button>
+            <button onclick="testPostRequest()">Test POST Request</button>
+            <button onclick="testConfiguration()">Test Configuration</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+            
+            <div id="testResults"></div>
+        </div>
+
+        <!-- Manual Test Section -->
+        <div class="section">
+            <h3>3. Manual Test</h3>
+            <p>Use this to manually test your Google Apps Script:</p>
+            <button onclick="manualTest()">Send Manual Test</button>
+            <div id="manualResults"></div>
+        </div>
+
+        <!-- Troubleshooting Section -->
+        <div class="section">
+            <h3>4. Troubleshooting</h3>
+            <button onclick="showTroubleshooting()">Show Common Issues</button>
+            <div id="troubleshootingInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test GET request to Google Apps Script
+        async function testGetRequest() {
+            const url = document.getElementById('scriptUrl').value;
+            if (!url) {
+                showResult('testResults', 'Please enter Google Apps Script URL', 'error');
+                return;
+            }
+
+            try {
+                showResult('testResults', 'Testing GET request...', 'warning');
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const text = await response.text();
+                showResult('testResults', `GET Request Success:\n${text}`, 'success');
+                
+            } catch (error) {
+                showResult('testResults', `GET Request Failed:\n${error.message}`, 'error');
+            }
+        }
+
+        // Test POST request to Google Apps Script
+        async function testPostRequest() {
+            const url = document.getElementById('scriptUrl').value;
+            const testData = document.getElementById('testData').value;
+            
+            if (!url) {
+                showResult('testResults', 'Please enter Google Apps Script URL', 'error');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(testData);
+                showResult('testResults', 'Testing POST request...', 'warning');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                showResult('testResults', 'POST Request Sent (no-cors mode - cannot read response)\nCheck Google Apps Script execution logs for results.', 'success');
+                
+            } catch (error) {
+                showResult('testResults', `POST Request Failed:\n${error.message}`, 'error');
+            }
+        }
+
+        // Test current configuration
+        function testConfiguration() {
+            let results = 'Configuration Test Results:\n\n';
+            
+            // Check if SecureConfig is available
+            if (typeof window.SecureConfig !== 'undefined') {
+                results += '✅ SecureConfig loaded\n';
+                results += `📍 Google Apps Script URL: ${window.SecureConfig.get('GOOGLE_APPS_SCRIPT_URL') || 'Not configured'}\n`;
+                results += `📍 Attendance Tracking: ${window.SecureConfig.get('ENABLE_ATTENDANCE_TRACKING')}\n`;
+                results += `📍 Google Sheets Feature: ${window.SecureConfig.get('FEATURE_GOOGLE_SHEETS')}\n`;
+            } else {
+                results += '❌ SecureConfig not loaded\n';
+            }
+            
+            // Check environment variables
+            if (typeof window.ENV_CONFIG !== 'undefined') {
+                results += '✅ ENV_CONFIG loaded\n';
+            } else {
+                results += '❌ ENV_CONFIG not loaded\n';
+            }
+            
+            // Check for QRCode library
+            if (typeof QRCode !== 'undefined') {
+                results += '✅ QRCode library loaded\n';
+            } else {
+                results += '❌ QRCode library not loaded\n';
+            }
+            
+            showResult('testResults', results, 'success');
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            showResult('testResults', 'Running comprehensive tests...', 'warning');
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            testConfiguration();
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testGetRequest();
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testPostRequest();
+        }
+
+        // Manual test
+        async function manualTest() {
+            const url = document.getElementById('scriptUrl').value;
+            if (!url) {
+                showResult('manualResults', 'Please enter Google Apps Script URL', 'error');
+                return;
+            }
+
+            const testData = {
+                name: 'Manual Test User',
+                email: 'manual@test.com',
+                event: 'Manual Test Event',
+                qrGenerated: true,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
+
+            try {
+                showResult('manualResults', 'Sending manual test...', 'warning');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                showResult('manualResults', `Manual test sent successfully!\n\nData sent:\n${JSON.stringify(testData, null, 2)}\n\nCheck your Google Sheet and Apps Script logs for results.`, 'success');
+                
+            } catch (error) {
+                showResult('manualResults', `Manual test failed:\n${error.message}`, 'error');
+            }
+        }
+
+        // Show troubleshooting information
+        function showTroubleshooting() {
+            const troubleshooting = `Common Issues and Solutions:
+
+1. "Cannot read properties of undefined (reading 'postData')"
+   ✅ Update Google Apps Script with the latest code
+   ✅ Redeploy the script as a new version
+   ✅ Check deployment permissions
+
+2. "Permission denied" or "Script function not found"
+   ✅ Ensure deployment has "Anyone" access
+   ✅ Re-authorize the script permissions
+   ✅ Check if script is deployed as web app
+
+3. "Invalid JSON" or parsing errors
+   ✅ Verify test data is valid JSON
+   ✅ Check Content-Type header is set correctly
+
+4. No response or timeout
+   ✅ Check Google Apps Script execution logs
+   ✅ Verify SHEET_ID is configured correctly
+   ✅ Ensure Google Sheet exists and is accessible
+
+5. CORS errors
+   ✅ Use 'no-cors' mode for POST requests
+   ✅ This is normal behavior for Google Apps Script
+
+Quick Fixes:
+• Copy the updated google-apps-script.js code
+• Replace YOUR_GOOGLE_SHEET_ID_HERE with your actual Sheet ID
+• Redeploy as a new version
+• Test with this debug tool`;
+
+            showResult('troubleshootingInfo', troubleshooting, 'warning');
+        }
+
+        // Helper function to show results
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        // Auto-populate script URL if available
+        window.addEventListener('load', function() {
+            if (typeof window.SecureConfig !== 'undefined') {
+                const scriptUrl = window.SecureConfig.get('GOOGLE_APPS_SCRIPT_URL');
+                if (scriptUrl && !scriptUrl.includes('YOUR_SCRIPT_ID')) {
+                    document.getElementById('scriptUrl').value = scriptUrl;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
