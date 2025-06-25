@@ -333,6 +333,25 @@ function initializeMainFunctionality(config) {
             // Show attendance recording status
             showAttendanceStatus('Recording attendance...', 'info');
 
+            // Get IP address (best effort)
+            let ipAddress = '';
+            try {
+                // Try to get IP address from a public service
+                const ipResponse = await fetch('https://api.ipify.org?format=json', {
+                    method: 'GET',
+                    timeout: 3000
+                });
+                if (ipResponse.ok) {
+                    const ipData = await ipResponse.json();
+                    ipAddress = ipData.ip || '';
+                }
+            } catch (ipError) {
+                // IP detection failed, continue without it
+                if (config.enableConsoleLogging) {
+                    console.warn('Could not detect IP address:', ipError);
+                }
+            }
+
             // Prepare attendance data using environment configuration
             const attendanceData = {
                 name: name,
@@ -340,7 +359,8 @@ function initializeMainFunctionality(config) {
                 event: eventName || config.defaultEventName,
                 qrGenerated: true,
                 timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent
+                userAgent: navigator.userAgent,
+                ipAddress: ipAddress
             };
 
             // Log the request if debugging is enabled

@@ -74,7 +74,7 @@ This is a **required step** for automatic attendance tracking.
 5. **Authorize access** by following the on-screen prompts and granting the necessary permissions.
 6. **Copy the Web app URL**. This is the URL you will use for the `GOOGLE_APPS_SCRIPT_URL` environment variable.
 
-Your Google Sheet is now ready to receive data. The script will automatically create headers on the first run: `Timestamp`, `Student Name`, `Email Address`, `Event Name`, `Status`, `QR Generated`, `User Agent`.
+Your Google Sheet is now ready to receive data. The script will automatically create headers on the first run: `Timestamp`, `Student Name`, `Email Address`, `Event Name`, `Status`, `QR Generated`, `User Agent`, `IP Address`. Headers are automatically created whether you're using a new sheet or an existing sheet without proper headers.
 
 ## Quick Start
 

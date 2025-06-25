@@ -170,16 +170,18 @@ function createErrorResponse(error, method) {
 function recordAttendance(data) {
   try {
     // Open the Google Sheet
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-    
+    let sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+
     // If sheet doesn't exist, create it with headers
     if (!sheet) {
-      const newSheet = SpreadsheetApp.openById(SHEET_ID).insertSheet(SHEET_NAME);
-      setupSheetHeaders(newSheet);
-      return recordAttendance(data); // Retry after creating sheet
+      sheet = SpreadsheetApp.openById(SHEET_ID).insertSheet(SHEET_NAME);
+      setupSheetHeaders(sheet);
+    } else {
+      // Check if headers exist on first run (for existing sheets)
+      ensureHeadersExist(sheet);
     }
-    
-    // Prepare the row data
+
+    // Prepare the row data (8 columns including IP Address)
     const timestamp = new Date();
     const rowData = [
       timestamp, // A: Timestamp
@@ -267,6 +269,97 @@ function setupSheetHeaders(sheet) {
 }
 
 /**
+ * Ensure headers exist in the sheet (for first run on existing sheets)
+ */
+function ensureHeadersExist(sheet) {
+  try {
+    // Check if the sheet is empty or if the first row doesn't contain proper headers
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow === 0) {
+      // Sheet is completely empty, add headers
+      setupSheetHeaders(sheet);
+      return;
+    }
+
+    // Check if first row contains the expected headers
+    const firstRowRange = sheet.getRange(1, 1, 1, 8);
+    const firstRowValues = firstRowRange.getValues()[0];
+
+    const expectedHeaders = [
+      'Timestamp',
+      'Student Name',
+      'Email Address',
+      'Event Name',
+      'Status',
+      'QR Generated',
+      'User Agent',
+      'IP Address'
+    ];
+
+    // Check if headers match (allowing for some flexibility in case and spacing)
+    let headersMatch = true;
+    for (let i = 0; i < expectedHeaders.length; i++) {
+      const cellValue = firstRowValues[i] ? firstRowValues[i].toString().trim() : '';
+      const expectedValue = expectedHeaders[i];
+
+      if (cellValue.toLowerCase() !== expectedValue.toLowerCase()) {
+        headersMatch = false;
+        break;
+      }
+    }
+
+    // If headers don't match or are missing, set them up
+    if (!headersMatch) {
+      console.log('Headers missing or incorrect, setting up proper headers');
+      setupSheetHeaders(sheet);
+    } else {
+      console.log('Headers already exist and are correct');
+    }
+
+  } catch (error) {
+    console.error('Error checking headers:', error);
+    // If there's an error, try to set up headers anyway
+    setupSheetHeaders(sheet);
+  }
+}
+
+/**
+ * Test function to verify header creation
+ */
+function testHeaderCreation() {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      console.log('Sheet does not exist, will be created on first attendance record');
+      return { success: false, message: 'Sheet does not exist yet' };
+    }
+
+    // Test the ensureHeadersExist function
+    ensureHeadersExist(sheet);
+
+    // Verify headers were created
+    const firstRowRange = sheet.getRange(1, 1, 1, 8);
+    const headers = firstRowRange.getValues()[0];
+
+    console.log('Current headers:', headers);
+
+    return {
+      success: true,
+      message: 'Header creation test completed',
+      headers: headers
+    };
+
+  } catch (error) {
+    console.error('Error testing header creation:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+/**
  * Test function to verify the setup
  */
 function testAttendanceRecording() {
@@ -344,7 +437,21 @@ function runSystemTest() {
     };
   }
 
-  // Test 3: Record attendance
+  // Test 3: Header creation
+  try {
+    const headerResult = testHeaderCreation();
+    results.tests.headerCreation = {
+      success: headerResult.success,
+      result: headerResult
+    };
+  } catch (error) {
+    results.tests.headerCreation = {
+      success: false,
+      error: error.message
+    };
+  }
+
+  // Test 4: Record attendance
   try {
     const testResult = testAttendanceRecording();
     results.tests.recordAttendance = {
@@ -358,7 +465,7 @@ function runSystemTest() {
     };
   }
 
-  // Test 4: POST request handling
+  // Test 5: POST request handling
   try {
     const postResult = testPostRequest();
     results.tests.postRequest = {
