@@ -311,7 +311,12 @@ function ensureHeadersExist(sheet) {
 
     // If headers don't match or are missing, set them up
     if (!headersMatch) {
-      console.log('Headers missing or incorrect, setting up proper headers');
+      console.log('Headers missing or incorrect, inserting proper headers and preserving existing data');
+
+      // Insert a new row at the top to preserve existing data
+      sheet.insertRowBefore(1);
+
+      // Now set up headers in the new first row
       setupSheetHeaders(sheet);
     } else {
       console.log('Headers already exist and are correct');
@@ -320,7 +325,39 @@ function ensureHeadersExist(sheet) {
   } catch (error) {
     console.error('Error checking headers:', error);
     // If there's an error, try to set up headers anyway
-    setupSheetHeaders(sheet);
+    // But be more careful - only do this if the sheet is empty
+    if (sheet.getLastRow() === 0) {
+      setupSheetHeaders(sheet);
+    }
+  }
+}
+
+/**
+ * Manual function to fix existing sheets that have data but no headers
+ * Run this once if you have existing data without proper headers
+ */
+function fixExistingSheetHeaders() {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      return { success: false, message: 'Sheet not found' };
+    }
+
+    // Force header creation by calling ensureHeadersExist
+    ensureHeadersExist(sheet);
+
+    return {
+      success: true,
+      message: 'Headers have been added to existing sheet. Existing data has been preserved.',
+      totalRows: sheet.getLastRow()
+    };
+
+  } catch (error) {
+    console.error('Error fixing sheet headers:', error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 }
 
