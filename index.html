@@ -6,28 +6,51 @@
     <title>MTC Event Check-In QR Tool</title>
     
     <!-- Environment Configuration Meta Tags -->
-    <meta name="env-node_env" content="development">
-    <meta name="env-app_name" content="MTC Event Check-In QR Tool (Dev)">
-    <meta name="env-app_version" content="2.0.0-dev">
-    <meta name="env-default_event_name" content="MTC Development Event">
+    
+    
+    
+    
+    
+    
+    
+
+    
+    <!-- Environment Configuration Meta Tags -->
+    
+    
+    
+    
+    
+    
+    
+
+
+    <!-- Environment Configuration Meta Tags -->
+    <!-- This will be updated by the deployment script -->
+    <meta name="secure-google_apps_script_url" content="YOUR_GOOGLE_APPS_SCRIPT_URL_HERE">
+    
+    <!-- Production Environment Meta Tags -->
+    <meta name="env-node_env" content="production">
+    <meta name="env-deployment_target" content="github-pages">
     <meta name="env-enable_attendance_tracking" content="true">
     <meta name="env-feature_google_sheets" content="true">
-    <meta name="env-show_debug_info" content="true">
-
-    
-    <!-- Environment Configuration Meta Tags -->
-    
-    
-    
-    
-    
-    
-    
+    <meta name="env-show_debug_info" content="false">
 
 
-    <!-- Environment Configuration Meta Tags -->
-    <!-- Update these with your actual values -->
-    <meta name="secure-google_apps_script_url" content="YOUR_GOOGLE_APPS_SCRIPT_URL_HERE">
+    <!-- Production Configuration for GitHub Pages -->
+    <script>
+        // GitHub Pages production configuration
+        if (window.location.hostname.includes('github.io') || window.location.hostname.includes('github.com')) {
+            window.GITHUB_PAGES_CONFIG = {
+                NODE_ENV: 'production',
+                ENABLE_ATTENDANCE_TRACKING: true,
+                FEATURE_GOOGLE_SHEETS: true,
+                SHOW_ATTENDANCE_MESSAGES: true,
+                SHOW_DEBUG_INFO: false,
+                ENABLE_CONSOLE_LOGGING: false
+            };
+        }
+    </script>
     
     
     

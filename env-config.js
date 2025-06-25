@@ -115,13 +115,19 @@ class EnvironmentConfig {
      */
     async loadFromEndpoint() {
         try {
+            // Check if this is GitHub Pages first
+            if (this.isGitHubPages()) {
+                await this.loadFromGitHubPages();
+                return;
+            }
+
             const response = await fetch('/api/env', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const envData = await response.json();
                 this.mergeConfiguration(envData);
@@ -130,6 +136,37 @@ class EnvironmentConfig {
             }
         } catch (error) {
             throw new Error(`Failed to load from endpoint: ${error.message}`);
+        }
+    }
+
+    /**
+     * Check if running on GitHub Pages
+     */
+    isGitHubPages() {
+        const hostname = window.location.hostname;
+        return hostname.includes('github.io') || hostname.includes('github.com');
+    }
+
+    /**
+     * Load configuration for GitHub Pages deployment
+     */
+    async loadFromGitHubPages() {
+        try {
+            // Try to load production config
+            const response = await fetch('/config.production.json');
+            if (response.ok) {
+                const prodConfig = await response.json();
+                this.mergeConfiguration(prodConfig);
+            } else {
+                // Fallback to regular config.json
+                const fallbackResponse = await fetch('/config.json');
+                if (fallbackResponse.ok) {
+                    const config = await fallbackResponse.json();
+                    this.mergeConfiguration(config);
+                }
+            }
+        } catch (error) {
+            console.warn('Could not load GitHub Pages config, using defaults:', error);
         }
     }
     

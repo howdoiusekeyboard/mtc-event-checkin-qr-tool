@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages Configuration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { 
+            background: #0078D4; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { background: #106ebe; }
+    </style>
+</head>
+<body>
+    <h1>🧪 GitHub Pages Configuration Test</h1>
+    
+    <div class="test-section">
+        <h2>Environment Detection</h2>
+        <div id="environment-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Configuration Loading</h2>
+        <div id="config-status"></div>
+        <button onclick="testConfigLoading()">Test Configuration</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Google Apps Script URL</h2>
+        <div id="google-script-status"></div>
+        <button onclick="testGoogleScriptPrompt()">Test Google Script Prompt</button>
+        <button onclick="clearStoredConfig()">Clear Stored Config</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Configuration Details</h2>
+        <pre id="config-details"></pre>
+        <button onclick="showConfigDetails()">Show Configuration</button>
+    </div>
+
+    <!-- Include the actual configuration scripts -->
+    <script src="env-loader.js"></script>
+    <script src="secure-config.js"></script>
+
+    <script>
+        let configSystem = null;
+
+        // Initialize on page load
+        window.addEventListener('load', async function() {
+            await initializeTest();
+        });
+
+        async function initializeTest() {
+            // Test environment detection
+            testEnvironmentDetection();
+            
+            // Initialize configuration system
+            try {
+                if (typeof window.SecureConfig !== 'undefined') {
+                    configSystem = window.SecureConfig;
+                    await configSystem.initialize();
+                    document.getElementById('config-status').innerHTML = 
+                        '<div class="success">✅ Configuration system initialized successfully</div>';
+                } else {
+                    document.getElementById('config-status').innerHTML = 
+                        '<div class="error">❌ Configuration system not found</div>';
+                }
+            } catch (error) {
+                document.getElementById('config-status').innerHTML = 
+                    '<div class="error">❌ Configuration initialization failed: ' + error.message + '</div>';
+            }
+        }
+
+        function testEnvironmentDetection() {
+            const hostname = window.location.hostname;
+            const isGitHubPages = hostname.includes('github.io') || hostname.includes('github.com');
+            const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+            
+            let status = '';
+            if (isGitHubPages) {
+                status = '<div class="success">✅ GitHub Pages environment detected</div>';
+            } else if (isLocalhost) {
+                status = '<div class="info">ℹ️ Localhost environment detected</div>';
+            } else {
+                status = '<div class="warning">⚠️ Unknown environment: ' + hostname + '</div>';
+            }
+            
+            status += '<p><strong>Current hostname:</strong> ' + hostname + '</p>';
+            status += '<p><strong>Protocol:</strong> ' + window.location.protocol + '</p>';
+            
+            document.getElementById('environment-status').innerHTML = status;
+        }
+
+        async function testConfigLoading() {
+            try {
+                // Test loading config.json
+                const response = await fetch('/config.json');
+                if (response.ok) {
+                    const config = await response.json();
+                    document.getElementById('config-status').innerHTML += 
+                        '<div class="success">✅ config.json loaded successfully</div>';
+                } else {
+                    document.getElementById('config-status').innerHTML += 
+                        '<div class="error">❌ Failed to load config.json: ' + response.status + '</div>';
+                }
+                
+                // Test production config
+                const prodResponse = await fetch('/config.production.json');
+                if (prodResponse.ok) {
+                    document.getElementById('config-status').innerHTML += 
+                        '<div class="success">✅ config.production.json available</div>';
+                } else {
+                    document.getElementById('config-status').innerHTML += 
+                        '<div class="warning">⚠️ config.production.json not found</div>';
+                }
+            } catch (error) {
+                document.getElementById('config-status').innerHTML += 
+                    '<div class="error">❌ Configuration loading failed: ' + error.message + '</div>';
+            }
+        }
+
+        function testGoogleScriptPrompt() {
+            if (configSystem) {
+                // Clear existing URL to trigger prompt
+                configSystem.config.GOOGLE_APPS_SCRIPT_URL = '';
+                configSystem.promptForGoogleAppsScriptUrl();
+                
+                const url = configSystem.get('GOOGLE_APPS_SCRIPT_URL');
+                if (url && !url.includes('YOUR_')) {
+                    document.getElementById('google-script-status').innerHTML = 
+                        '<div class="success">✅ Google Apps Script URL configured: ' + url.substring(0, 50) + '...</div>';
+                } else {
+                    document.getElementById('google-script-status').innerHTML = 
+                        '<div class="warning">⚠️ Google Apps Script URL not configured</div>';
+                }
+            } else {
+                document.getElementById('google-script-status').innerHTML = 
+                    '<div class="error">❌ Configuration system not available</div>';
+            }
+        }
+
+        function clearStoredConfig() {
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear();
+            }
+            if (typeof localStorage !== 'undefined') {
+                localStorage.clear();
+            }
+            document.getElementById('google-script-status').innerHTML = 
+                '<div class="info">ℹ️ Stored configuration cleared. Refresh page to test again.</div>';
+        }
+
+        function showConfigDetails() {
+            if (configSystem) {
+                const config = configSystem.getAll();
+                // Hide sensitive information
+                const safeConfig = { ...config };
+                if (safeConfig.GOOGLE_APPS_SCRIPT_URL) {
+                    safeConfig.GOOGLE_APPS_SCRIPT_URL = safeConfig.GOOGLE_APPS_SCRIPT_URL.substring(0, 50) + '...';
+                }
+                document.getElementById('config-details').textContent = JSON.stringify(safeConfig, null, 2);
+            } else {
+                document.getElementById('config-details').textContent = 'Configuration system not available';
+            }
+        }
+    </script>
+</body>
+</html>

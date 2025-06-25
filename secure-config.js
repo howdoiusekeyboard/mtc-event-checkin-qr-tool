@@ -198,6 +198,12 @@ class SecureConfig {
      */
     async loadSensitiveFromProduction() {
         try {
+            // Check if this is GitHub Pages deployment
+            if (this.isGitHubPages()) {
+                await this.loadSensitiveFromGitHubPages();
+                return;
+            }
+
             // In production, sensitive config should come from server endpoint
             const response = await fetch('/api/secure-config', {
                 method: 'GET',
@@ -206,7 +212,7 @@ class SecureConfig {
                     'Accept': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const sensitiveConfig = await response.json();
                 Object.keys(sensitiveConfig).forEach(key => {
@@ -217,29 +223,70 @@ class SecureConfig {
             }
         } catch (error) {
             console.warn('Could not load production sensitive config:', error);
+            // Fallback to GitHub Pages method if server endpoint fails
+            if (this.isGitHubPages()) {
+                await this.loadSensitiveFromGitHubPages();
+            }
+        }
+    }
+
+    /**
+     * Check if running on GitHub Pages
+     */
+    isGitHubPages() {
+        const hostname = window.location.hostname;
+        return hostname.includes('github.io') || hostname.includes('github.com');
+    }
+
+    /**
+     * Load sensitive config for GitHub Pages deployment
+     */
+    async loadSensitiveFromGitHubPages() {
+        // For GitHub Pages, we need to prompt for the Google Apps Script URL
+        // since we can't store it securely in the repository
+        if (!this.config.GOOGLE_APPS_SCRIPT_URL || this.config.GOOGLE_APPS_SCRIPT_URL.includes('YOUR_')) {
+            this.promptForGoogleAppsScriptUrl();
+        }
+
+        // Load GitHub Pages specific configuration
+        if (window.GITHUB_PAGES_CONFIG) {
+            Object.keys(window.GITHUB_PAGES_CONFIG).forEach(key => {
+                this.config[key] = window.GITHUB_PAGES_CONFIG[key];
+            });
         }
     }
     
     /**
-     * Prompt for sensitive configuration (development only)
+     * Prompt for sensitive configuration (development and GitHub Pages)
      */
     promptForSensitiveConfig() {
-        if (!this.isDevelopment()) return;
-        
+        if (!this.isDevelopment() && !this.isGitHubPages()) return;
+
         // Only prompt for Google Apps Script URL if Google Sheets feature is enabled
         if (this.config.FEATURE_GOOGLE_SHEETS && !this.config.GOOGLE_APPS_SCRIPT_URL) {
-            const url = prompt(
-                'Enter your Google Apps Script URL for attendance tracking:\n' +
-                '(Leave empty to disable attendance tracking)'
-            );
-            
-            if (url && url.trim() && !url.includes('YOUR_')) {
-                this.config.GOOGLE_APPS_SCRIPT_URL = url.trim();
+            this.promptForGoogleAppsScriptUrl();
+        }
+    }
+
+    /**
+     * Prompt specifically for Google Apps Script URL
+     */
+    promptForGoogleAppsScriptUrl() {
+        const url = prompt(
+            'Enter your Google Apps Script URL for attendance tracking:\n' +
+            '(Leave empty to disable attendance tracking)'
+        );
+
+        if (url && url.trim() && !url.includes('YOUR_')) {
+            this.config.GOOGLE_APPS_SCRIPT_URL = url.trim();
+            if (this.secureStorage) {
                 this.secureStorage.set('GOOGLE_APPS_SCRIPT_URL', url.trim());
-            } else {
-                this.config.ENABLE_ATTENDANCE_TRACKING = false;
-                this.config.FEATURE_GOOGLE_SHEETS = false;
             }
+            this.config.ENABLE_ATTENDANCE_TRACKING = true;
+            this.config.FEATURE_GOOGLE_SHEETS = true;
+        } else {
+            this.config.ENABLE_ATTENDANCE_TRACKING = false;
+            this.config.FEATURE_GOOGLE_SHEETS = false;
         }
     }
     
